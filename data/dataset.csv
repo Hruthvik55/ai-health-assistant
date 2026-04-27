@@ -1,0 +1,16 @@
+fever_level,cough_type,headache_level,fatigue_level,body_pain,sore_throat,runny_nose,duration_level,disease
+2,2,1,2,1,1,0,1,Flu
+2,2,1,2,1,1,0,2,Flu
+1,1,0,0,0,1,1,0,Cold
+1,1,0,1,0,1,1,1,Cold
+2,0,2,2,1,0,0,2,Viral Fever
+2,0,1,2,1,0,0,1,Viral Fever
+0,0,2,1,0,0,0,0,Headache
+0,0,2,2,0,0,0,1,Headache
+0,1,0,1,0,1,1,0,Allergy
+0,1,0,1,0,1,1,1,Allergy
+2,2,2,2,1,1,0,2,Flu
+1,1,1,1,0,1,1,1,Cold
+2,0,2,2,1,0,0,2,Viral Fever
+0,0,1,1,0,0,0,0,Headache
+0,1,0,1,0,1,1,0,Allergy
