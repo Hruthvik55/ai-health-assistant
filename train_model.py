@@ -1,25 +1,62 @@
 import pandas as pd
-from sklearn.tree import DecisionTreeClassifier
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.pipeline import Pipeline
 import joblib
 
-# Load dataset
-data = pd.read_csv("data/dataset.csv")
+# 🔥 Expanded dataset (important)
+data = {
+    "text": [
+        "high fever and cough",
+        "fever with body pain and fatigue",
+        "high temperature and weakness",
+        "runny nose and cough",
+        "dry cough and sore throat",
+        "blocked nose and mild cough",
+        "very tired with high fever",
+        "fever and extreme fatigue",
+        "severe headache",
+        "headache with tiredness",
+        "migraine and fatigue",
+        "runny nose sneezing and cough",
+        "allergy cough no fever",
+        "sore throat and runny nose",
+        "wet cough with fever",
+        "body ache with fever",
+        "mild fever and cough",
+        "weakness and headache",
+        "nasal congestion and cough",
+        "cough with no fever",
+        "extreme tiredness and fever",
+        "headache only",
+        "cold and runny nose",
+        "dry cough no fever",
+        "fever for 3 days and fatigue"
+    ],
+    "disease": [
+        "Flu","Flu","Flu",
+        "Cold","Cold","Cold",
+        "Viral Fever","Viral Fever",
+        "Headache","Headache","Headache",
+        "Allergy","Allergy","Allergy",
+        "Flu","Flu","Cold",
+        "Headache","Cold","Cold",
+        "Viral Fever","Headache",
+        "Cold","Cold","Flu"
+    ]
+}
 
-# Features
-X = data.drop("disease", axis=1)
+df = pd.DataFrame(data)
 
-# Target
-y = data["disease"]
-
-# Model
-model = DecisionTreeClassifier()
-
+# 🔥 NLP PIPELINE (BEST PRACTICE)
+model = Pipeline([
+    ("vectorizer", TfidfVectorizer(stop_words='english')),
+    ("classifier", MultinomialNB())
+])
 # Train
-model.fit(X, y)
+model.fit(df["text"], df["disease"])
 
 # Save
 joblib.dump(model, "model/model.pkl")
 
-# Accuracy
-accuracy = model.score(X, y)
-print(f"Model trained successfully! Accuracy: {accuracy * 100:.2f}%")
+print("✅ NLP model trained successfully!")

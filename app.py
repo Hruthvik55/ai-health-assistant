@@ -1,108 +1,294 @@
 import streamlit as st
 import joblib
-import pandas as pd
 
-# Load model
+# =============================
+# 🎨 STYLING
+# =============================
+st.markdown("""
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Playfair+Display:wght@600&display=swap');
+
+html, body, [class*="css"] {
+    font-family: 'Inter', sans-serif;
+    font-size: 17px;
+    background-color: #f8fafc;
+}
+
+/* Header full width */
+.header {
+    width: 100vw;
+    margin-left: -50vw;
+    left: 50%;
+    position: relative;
+
+    background: linear-gradient(135deg, #6366f1, #818cf8);
+    padding: 50px 60px;
+    color: white;
+}
+
+.header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 42px;
+    margin-bottom: 10px;
+}
+
+.header p {
+    font-size: 18px;
+    opacity: 0.9;
+}
+
+/* Content container */
+.block-container {
+    max-width: 880px;
+}
+
+/* Cards */
+.card {
+    background: white;
+    padding: 22px;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    margin-bottom: 18px;
+    transition: 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+}
+
+/* Result card */
+.result-card {
+    background: #eef2ff;
+    padding: 22px;
+    border-radius: 12px;
+    border-left: 6px solid #6366f1;
+}
+
+/* Section headings */
+h2, h3 {
+    color: #1e293b;
+}
+
+/* Feature highlights */
+.feature {
+    padding: 10px;
+    border-radius: 8px;
+    background: #f1f5ff;
+}
+
+/* Buttons */
+.stButton button {
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
+    color: white;
+    border-radius: 8px;
+    padding: 10px 18px;
+    border: none;
+    font-weight: 500;
+}
+
+.stButton button:hover {
+    background: linear-gradient(135deg, #4f46e5, #4338ca);
+}
+
+/* Sidebar */
+section[data-testid="stSidebar"] {
+    background-color: #f1f5f9;
+}
+</style>
+""", unsafe_allow_html=True)
+
+# =============================
+# 🧠 LOAD MODEL
+# =============================
 model = joblib.load("model/model.pkl")
 
-# UI
-st.title("🧠 AI Health Assistant")
-st.caption("Enter your symptoms and get AI-based health insights")
+# =============================
+# 🔁 PAGE STATE (FIXED PROPERLY)
+# =============================
+if "page" not in st.session_state:
+    st.session_state.page = "Home"
 
-# Input
-user_input = st.text_area("Describe your symptoms", height=100)
+selected_page = st.sidebar.radio(
+    "Navigate",
+    ["Home", "Symptom Checker"],
+    index=["Home", "Symptom Checker"].index(st.session_state.page)
+)
 
-# Button
-if st.button("Analyze"):
+# Only update when user changes sidebar
+if selected_page != st.session_state.page:
+    st.session_state.page = selected_page
+    st.rerun()
 
-    text = user_input.lower()
+page = st.session_state.page
 
-    # Feature extraction (UPDATED)
+# =============================
+# 🏠 HOME PAGE
+# =============================
+if page == "Home":
 
-    fever_level = 2 if "high fever" in text else 1 if "fever" in text else 0
-    cough_type = 2 if "wet cough" in text else 1 if "cough" in text else 0
-    headache_level = 2 if "severe headache" in text else 1 if "headache" in text else 0
-    fatigue_level = 2 if "very tired" in text else 1 if "tired" in text else 0
+    st.markdown("""
+    <div class="header">
+        <h1>Health Insight</h1>
+        <p>Describe how you're feeling and get a quick assessment.</p>
+    </div>
+    """, unsafe_allow_html=True)
 
-    body_pain = 1 if "body pain" in text else 0
-    sore_throat = 1 if "sore throat" in text else 0
-    runny_nose = 1 if "runny nose" in text else 0
+    st.markdown('<div class="card">', unsafe_allow_html=True)
 
-    # Duration
-    if "week" in text:
-        duration_level = 2
-    elif "day" in text:
-        duration_level = 1
-    else:
-        duration_level = 0
+    st.markdown("### Why use this?")
+    st.write("Get quick, AI-based insights from your symptoms using natural language.")
 
-    # Create DataFrame
-    input_data = pd.DataFrame([[
-        fever_level, cough_type, headache_level, fatigue_level,
-        body_pain, sore_throat, runny_nose, duration_level
-    ]], columns=[
-        "fever_level","cough_type","headache_level","fatigue_level",
-        "body_pain","sore_throat","runny_nose","duration_level"
-    ])
+    col1, col2, col3 = st.columns(3)
 
-    # Prediction
-    prediction = model.predict(input_data)
-    probabilities = model.predict_proba(input_data)
+    with col1:
+        st.markdown("**Natural Input**")
+        st.write("Type symptoms freely")
 
-    disease = prediction[0]
-    confidence = max(probabilities[0]) * 100
+    with col2:
+        st.markdown("**Instant Results**")
+        st.write("Get quick predictions")
 
-    # Severity logic (based on levels)
-    symptom_score = fever_level + cough_type + headache_level + fatigue_level + body_pain
+    with col3:
+        st.markdown("**Explainable Output**")
+        st.write("Understand the result")
 
-    if symptom_score <= 2:
-        severity = "Mild"
-    elif symptom_score <= 5:
-        severity = "Moderate"
-    else:
-        severity = "Severe"
+    st.markdown('</div>', unsafe_allow_html=True)
 
-    # Guidance
-    guidance = {
-        "Flu": {
-            "advice": "Rest, fluids, avoid cold exposure",
-            "meds": "Paracetamol, Cough syrup"
-        },
-        "Cold": {
-            "advice": "Warm fluids, rest",
-            "meds": "Decongestants"
-        },
-        "Viral Fever": {
-            "advice": "Hydration + rest",
-            "meds": "Paracetamol"
-        },
-        "Headache": {
-            "advice": "Rest, reduce screen time",
-            "meds": "Pain relievers"
-        },
-        "Allergy": {
-            "advice": "Avoid allergens",
-            "meds": "Antihistamines"
+    st.markdown('<div class="card">', unsafe_allow_html=True)
+
+    st.markdown("### How it works")
+    st.write("""
+    1. Describe your symptoms  
+    2. Model analyzes patterns  
+    3. Get condition + suggestions  
+    """)
+
+    if st.button("Start Symptom Check"):
+        st.session_state.page = "Symptom Checker"
+        st.rerun()
+
+    st.markdown('</div>', unsafe_allow_html=True)
+
+# =============================
+# 🧠 SYMPTOM CHECKER
+# =============================
+elif page == "Symptom Checker":
+
+    st.markdown("""
+    <div class="header">
+        <h1>Symptom Checker</h1>
+        <p>Enter your symptoms below</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown('<div class="card">', unsafe_allow_html=True)
+
+    user_input = st.text_area(
+        "Example: I have fever and cough for 3 days",
+        height=120
+    )
+
+    analyze_clicked = st.button("Analyze")
+
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    if analyze_clicked:
+
+        if not user_input.strip():
+            st.error("Please enter your symptoms.")
+            st.stop()
+
+        # 🔥 NLP Prediction
+        prediction = model.predict([user_input])
+        probabilities = model.predict_proba([user_input])
+
+        disease = prediction[0]
+        confidence = max(probabilities[0]) * 100
+
+        classes = model.classes_
+        top2_idx = probabilities[0].argsort()[-2:][::-1]
+
+        # Severity
+        text = user_input.lower()
+        severity_score = sum(word in text for word in ["high", "severe", "very", "extreme"])
+
+        if severity_score == 0:
+            severity = "Mild"
+        elif severity_score == 1:
+            severity = "Moderate"
+        else:
+            severity = "Severe"
+
+        # Guidance
+        guidance = {
+            "Flu": {"advice": "Rest, fluids, avoid cold exposure", "meds": "Paracetamol, Cough syrup"},
+            "Cold": {"advice": "Warm fluids, rest", "meds": "Decongestants"},
+            "Viral Fever": {"advice": "Hydration + rest", "meds": "Paracetamol"},
+            "Headache": {"advice": "Rest, reduce screen time", "meds": "Pain relievers"},
+            "Allergy": {"advice": "Avoid allergens", "meds": "Antihistamines"}
         }
-    }
 
-    # Output
-    st.divider()
-    st.markdown(f"### 🩺 Condition: {disease}")
-    st.markdown(f"**Confidence:** {confidence:.2f}%")
+        # RESULT
+        st.markdown('<div class="result-card">', unsafe_allow_html=True)
 
-    # Severity UI
-    if severity == "Mild":
-        st.success(f"Severity: {severity} ✅")
-    elif severity == "Moderate":
-        st.warning(f"Severity: {severity} ⚠️")
-    else:
-        st.error(f"Severity: {severity} 🚨")
+        st.markdown(f"## {disease}")
+        st.write(f"Confidence: {confidence:.2f}%")
+        st.progress(int(confidence))
 
-    st.subheader("💡 Advice")
-    st.write(guidance[disease]["advice"])
+        st.markdown('</div>', unsafe_allow_html=True)
 
-    st.subheader("💊 Medication Categories")
-    st.write(guidance[disease]["meds"])
+        # DETAILS
+        st.markdown('<div class="card">', unsafe_allow_html=True)
 
-    st.warning("⚠️ Educational tool only, not medical advice.")
+        col1, col2 = st.columns(2)
+
+        with col1:
+            st.markdown("**Severity**")
+            st.write(severity)
+
+        with col2:
+            st.markdown("**Other possibilities**")
+            for idx in top2_idx:
+                st.write(f"{classes[idx]} ({probabilities[0][idx]*100:.2f}%)")
+
+        st.markdown('</div>', unsafe_allow_html=True)
+
+        # ADVICE
+        st.markdown('<div class="card">', unsafe_allow_html=True)
+
+        st.markdown("### What you can do")
+        st.write(guidance.get(disease, {}).get("advice", "General care recommended"))
+
+        st.markdown("### Typical treatments")
+        st.write(guidance.get(disease, {}).get("meds", "Consult a doctor"))
+
+        st.markdown('</div>', unsafe_allow_html=True)
+
+        # EXPLANATION
+        st.markdown('<div class="card">', unsafe_allow_html=True)
+
+        st.markdown("### Why this result")
+
+        try:
+            vectorizer = model.named_steps["vectorizer"]
+            input_vector = vectorizer.transform([user_input]).toarray()[0]
+            feature_names = vectorizer.get_feature_names_out()
+
+            important_words = [
+                feature_names[i] for i, val in enumerate(input_vector) if val > 0
+            ]
+
+            if important_words:
+                st.write(
+                    f"This result is based on symptoms like {', '.join(important_words[:5])}."
+                )
+            else:
+                st.write("Prediction based on general patterns.")
+
+        except:
+            st.write("Explanation unavailable.")
+
+        st.markdown('</div>', unsafe_allow_html=True)
+
+        st.caption("This tool is for educational purposes only.")
